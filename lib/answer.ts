@@ -58,6 +58,28 @@ const TITLE_MATCH_WEIGHT = 3;
 const FOLLOW_UP_START = /^(그럼|그러면|그건|그거|그때|그런데|그리고|그 경우)/;
 // 이어 묻는 질문에서는 앞 질문보다 지금 질문의 단어를 더 중요하게 본다.
 const CURRENT_QUESTION_WEIGHT = 2;
+// 어떤 휴가나 경비인지 없는 질문을 찾는 규칙. 실제 AI는 지시문으로 판단하므로 가짜 답변 전용이다.
+const AMBIGUOUS_QUESTIONS = [
+  {
+    topic: /휴가/,
+    specific: /연차|반차|경조|결혼|출산|사망|병가|공가|훈련|취소|변경|이월|증빙/,
+    message: "어떤 휴가인지 알려 주세요. 예: 연차, 반차, 경조휴가, 병가, 공가",
+  },
+  {
+    topic: /경비/,
+    specific: /교통|택시|차량|식대|식비|숙박|일비|영수증|증빙|청구|지급|승인/,
+    message: "어떤 경비인지 알려 주세요. 예: 교통비, 야근 식대, 출장 숙박비",
+  },
+];
+// 자기 상황을 묻는 질문을 찾는 규칙. 역시 가짜 답변 전용이다.
+const PERSONAL_SITUATION =
+  /(^|\s)(제가|저는|저도|제 경우|내 경우|내가|나는)(\s|$)/;
+const PERSONAL_JUDGMENT_NOTICE =
+  "위 내용은 관련 규정 안내이며, 개인별 판단은 담당자에게 확인해 주세요.";
+
+function wasJustClarified(history: HistoryMessage[]): boolean {
+  return history.at(-1)?.type === "clarify";
+}
 
 // 조사가 붙어도 찾을 수 있도록 글을 두 글자씩 잘라 비교한다. 예: "연차는" → "연차", "차는"
 function toBigrams(text: string): Set<string> {
@@ -90,8 +112,17 @@ function findBestArticle(
   history: HistoryMessage[],
   articles: Article[],
 ): AiOutput {
+  const ambiguous = AMBIGUOUS_QUESTIONS.find(
+    ({ topic, specific }) => topic.test(question) && !specific.test(question),
+  );
+  if (ambiguous) {
+    return { type: "clarify", text: ambiguous.message, articleIds: [] };
+  }
+
   const questionBigrams = toBigrams(question);
-  const previousQuestion = FOLLOW_UP_START.test(question.trim())
+  const continuesConversation =
+    FOLLOW_UP_START.test(question.trim()) || wasJustClarified(history);
+  const previousQuestion = continuesConversation
     ? history.findLast(({ role }) => role === "user")?.content
     : undefined;
   const previousBigrams = previousQuestion
@@ -112,7 +143,10 @@ function findBestArticle(
   if (!best || bestScore < MIN_MATCH_SCORE) {
     return { type: "not_found", text: "", articleIds: [] };
   }
-  return { type: "answer", text: best.body, articleIds: [best.id] };
+  const text = PERSONAL_SITUATION.test(question)
+    ? `${best.body}\n\n${PERSONAL_JUDGMENT_NOTICE}`
+    : best.body;
+  return { type: "answer", text, articleIds: [best.id] };
 }
 
 // 오류 처리를 확인하기 위해 MOCK_AI_SCENARIO로 특정 상황을 일부러 만든다.
@@ -177,7 +211,11 @@ function isAiOutput(value: unknown): value is AiOutput {
 }
 
 // AI 출력을 믿지 않고 실제 조항과 대조해, 화면에 보낼 답변으로 바꾼다.
-function toChatResponse(output: unknown, articles: Article[]): ChatResponse {
+function toChatResponse(
+  output: unknown,
+  history: HistoryMessage[],
+  articles: Article[],
+): ChatResponse {
   if (!isAiOutput(output)) {
     throw new AnswerError("AI_ERROR");
   }
@@ -187,7 +225,11 @@ function toChatResponse(output: unknown, articles: Article[]): ChatResponse {
     citations: [],
     isMock: true,
   };
-  if (output.type === "not_found") {
+  // 되묻기는 한 번만 한다. 직전 답변도 되묻기였다면 찾지 못함으로 답한다.
+  if (
+    output.type === "not_found" ||
+    (output.type === "clarify" && wasJustClarified(history))
+  ) {
     return notFound;
   }
   if (output.type === "clarify") {
@@ -216,8 +258,9 @@ export async function getChatResponse(
   history: HistoryMessage[] = [],
 ): Promise<ChatResponse> {
   const articles = await loadArticles();
+  const recentHistory = history.slice(-MAX_HISTORY_MESSAGES);
   const output = await withTimeout(
-    getMockAiOutput(question, history.slice(-MAX_HISTORY_MESSAGES), articles),
+    getMockAiOutput(question, recentHistory, articles),
   );
-  return toChatResponse(output, articles);
+  return toChatResponse(output, recentHistory, articles);
 }
