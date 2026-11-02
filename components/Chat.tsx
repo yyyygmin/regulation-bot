@@ -18,6 +18,7 @@ import {
   PERSONAL_INFO_BLOCKED_MESSAGE,
   PERSONAL_INFO_NOTICE,
   RESPONSE_TIMEOUT_MS,
+  SUGGESTED_QUESTIONS,
   TOO_LONG_MESSAGE,
 } from "@/lib/constants";
 import { validateQuestion } from "@/lib/validate-input";
@@ -37,16 +38,20 @@ export default function Chat() {
 
   const isTooLong = question.length > MAX_QUESTION_LENGTH;
 
-  // 새 메시지가 생기면 대화의 맨 아래가 보이게 한다.
+  // 새 메시지가 생기면 대화의 맨 아래가 보이게 한다. 첫 화면에서는 위쪽을 그대로 둔다.
+  const hasConversation = messages.length > 0 || isSending;
   useEffect(() => {
-    conversationEnd.current?.scrollIntoView();
-  }, [messages, isSending]);
+    if (hasConversation) {
+      conversationEnd.current?.scrollIntoView();
+    }
+  }, [messages, hasConversation]);
 
-  async function submit() {
+  // 입력창과 질문 버튼이 같은 경로로 보내, 버튼 질문에도 같은 규칙을 적용한다.
+  async function sendQuestion(text: string) {
     if (isSending) {
       return;
     }
-    const error = validateQuestion(question);
+    const error = validateQuestion(text);
     if (error) {
       setNotice(INPUT_ERROR_MESSAGES[error] ?? "");
       return;
@@ -57,15 +62,16 @@ export default function Chat() {
       .slice(-MAX_HISTORY_MESSAGES)
       .map(({ role, text, type }) => ({ role, content: text, type }));
 
+    setQuestion(text);
     setNotice("");
     setIsSending(true);
-    setMessages((previous) => [...previous, { role: "user", text: question }]);
+    setMessages((previous) => [...previous, { role: "user", text }]);
     let failureMessage = ERROR_MESSAGE;
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, history }),
+        body: JSON.stringify({ question: text, history }),
         signal: AbortSignal.timeout(RESPONSE_TIMEOUT_MS),
       });
       if (!response.ok) {
@@ -100,7 +106,7 @@ export default function Chat() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    submit();
+    sendQuestion(question);
   }
 
   // Enter는 전송, Shift+Enter는 줄바꿈. 한글 조합 중의 Enter는 전송하지 않는다.
@@ -111,7 +117,7 @@ export default function Chat() {
       !event.nativeEvent.isComposing
     ) {
       event.preventDefault();
-      submit();
+      sendQuestion(question);
     }
   }
 
@@ -122,10 +128,24 @@ export default function Chat() {
         aria-live="polite"
         className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
       >
-        {messages.length === 0 && !isSending && (
-          <p className="m-auto text-center text-sm text-zinc-500 dark:text-zinc-400">
-            휴가나 경비 규정에서 궁금한 내용을 문장으로 입력해 보세요.
-          </p>
+        {!hasConversation && (
+          <div className="m-auto flex flex-col items-center gap-3">
+            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+              휴가나 경비 규정에서 궁금한 내용을 문장으로 입력해 보세요.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {SUGGESTED_QUESTIONS.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => sendQuestion(suggestion)}
+                  className="rounded-full border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />

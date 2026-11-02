@@ -23,6 +23,15 @@ export const PERSONAL_INFO_BLOCKED_MESSAGE =
 // 가짜 답변임을 알리는 표시. PRD에 문구가 없어 새로 정한 제안 문구다.
 export const MOCK_ANSWER_LABEL = "테스트용 가짜 답변입니다.";
 
+// 첫 화면의 자주 묻는 질문 버튼. 규정 문서에 답이 있는 질문으로 골랐다.
+export const SUGGESTED_QUESTIONS = [
+  "연차는 며칠 전까지 신청해야 하나요?",
+  "반차를 한 번 쓰면 연차가 얼마나 줄어드나요?",
+  "본인 결혼 때 경조휴가는 며칠인가요?",
+  "야근 식대는 얼마까지 돌려받을 수 있나요?",
+  "국내 출장 일비는 하루에 얼마인가요?",
+];
+
 // 질문 최대 글자 수
 export const MAX_QUESTION_LENGTH = 500;
 
