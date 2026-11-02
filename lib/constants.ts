@@ -15,6 +15,11 @@ export const ERROR_MESSAGE =
 // 입력창에 항상 표시하는 안내
 export const PERSONAL_INFO_NOTICE = "개인정보를 입력하지 마세요.";
 
+// 전송을 막을 때의 안내. PRD에 문구가 없어 새로 정한 제안 문구다.
+export const TOO_LONG_MESSAGE = "질문은 500자 이내로 입력해 주세요.";
+export const PERSONAL_INFO_BLOCKED_MESSAGE =
+  "전화번호나 주민등록번호는 지운 뒤 다시 보내 주세요.";
+
 // 질문 최대 글자 수
 export const MAX_QUESTION_LENGTH = 500;
 
