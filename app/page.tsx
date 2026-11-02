@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex h-dvh w-full max-w-3xl flex-col font-sans sm:p-4">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-sm">
-        <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+        <header className="flex items-center gap-3 border-t-4 border-b border-t-brand-red border-b-line px-4 py-3">
           <span
             aria-hidden="true"
             className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-lg font-bold text-white"

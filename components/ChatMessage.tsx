@@ -39,7 +39,7 @@ export default function ChatMessage({ message }: { message: Message }) {
       <div className="mt-3 flex flex-col gap-1 border-t border-line pt-2 text-xs">
         <p className="text-muted">{DISCLAIMER_MESSAGE}</p>
         {message.isMock && (
-          <p className="font-medium text-amber-700 dark:text-amber-400">
+          <p className="font-medium text-notice">
             {MOCK_ANSWER_LABEL}
           </p>
         )}

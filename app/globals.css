@@ -1,14 +1,18 @@
 @import "tailwindcss";
 
+/* 캠코 CI 전용 색상 기준. 블루 #091f5f, 레드 #ff0050, 서브 #b30000, #e6e6e6 (kamco.or.kr 캠코CI 안내)
+   그 밖의 값은 글자가 잘 읽히도록 이 색에서 파생해 정한 값이다. */
 :root {
-  --background: #f4f6f5;
-  --foreground: #1a2120;
+  --background: #f3f4f8;
+  --foreground: #14193a;
   --surface: #ffffff;
-  --muted: #5c6866;
-  --line: #dde3e1;
-  --accent: #0f766e;
-  --accent-soft: #e3f2f0;
-  --accent-text: #0b5f58;
+  --muted: #595959;
+  --line: #e6e6e6;
+  --accent: #091f5f;
+  --accent-soft: #e8ebf4;
+  --accent-text: #091f5f;
+  --brand-red: #ff0050;
+  --notice: #b30000;
 }
 
 @theme inline {
@@ -20,22 +24,26 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-text: var(--accent-text);
+  --color-brand-red: var(--brand-red);
+  --color-notice: var(--notice);
   --font-sans:
     var(--font-geist-sans), "Apple SD Gothic Neo", "Malgun Gothic",
     "Noto Sans KR", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
+/* 어두운 화면에서는 캠코 블루가 배경에 묻혀, 같은 계열의 밝은 색으로 대신한다. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0d1211;
-    --foreground: #e8eeec;
-    --surface: #161c1b;
-    --muted: #9aa8a5;
-    --line: #2a3331;
-    --accent: #0f766e;
-    --accent-soft: #15302d;
-    --accent-text: #7fd6cb;
+    --background: #060c22;
+    --foreground: #e9ecf6;
+    --surface: #0d1534;
+    --muted: #a6adc4;
+    --line: #27315a;
+    --accent: #2f4fa8;
+    --accent-soft: #1a2652;
+    --accent-text: #b4c3f2;
+    --notice: #ff7a9c;
   }
 }
 

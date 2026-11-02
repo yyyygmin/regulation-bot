@@ -165,7 +165,7 @@ export default function Chat() {
         onSubmit={handleSubmit}
         className="flex flex-col gap-2 border-t border-line p-4"
       >
-        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+        <p className="text-sm font-medium text-notice">
           {PERSONAL_INFO_NOTICE}
         </p>
         <div className="flex items-end gap-2 rounded-2xl border border-line bg-background p-2 transition-colors focus-within:border-accent">
@@ -194,16 +194,13 @@ export default function Chat() {
           <span
             className={
               isTooLong
-                ? "font-medium text-red-600 dark:text-red-400"
+                ? "font-medium text-notice"
                 : "text-muted"
             }
           >
             {question.length}/{MAX_QUESTION_LENGTH}
           </span>
-          <p
-            role="status"
-            className="text-right text-red-600 dark:text-red-400"
-          >
+          <p role="status" className="text-right text-notice">
             {notice}
           </p>
         </div>
