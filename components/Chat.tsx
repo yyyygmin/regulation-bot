@@ -126,20 +126,23 @@ export default function Chat() {
       <section
         aria-label="대화"
         aria-live="polite"
-        className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4"
       >
         {!hasConversation && (
-          <div className="m-auto flex flex-col items-center gap-3">
-            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-              휴가나 경비 규정에서 궁금한 내용을 문장으로 입력해 보세요.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
+          <div className="m-auto flex w-full max-w-xl flex-col gap-4">
+            <div className="text-center">
+              <p className="text-lg font-semibold">무엇이 궁금하세요?</p>
+              <p className="mt-1 text-sm text-muted">
+                휴가나 경비 규정에서 궁금한 내용을 문장으로 입력해 보세요.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
               {SUGGESTED_QUESTIONS.map((suggestion) => (
                 <button
                   key={suggestion}
                   type="button"
                   onClick={() => sendQuestion(suggestion)}
-                  className="rounded-full border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+                  className="rounded-xl border border-line px-3.5 py-2.5 text-left text-sm transition-colors hover:border-accent hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-accent"
                 >
                   {suggestion}
                 </button>
@@ -151,7 +154,7 @@ export default function Chat() {
           <ChatMessage key={index} message={message} />
         ))}
         {isSending && (
-          <p className="self-start text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="self-start text-sm text-muted motion-safe:animate-pulse">
             답변을 만드는 중...
           </p>
         )}
@@ -160,10 +163,12 @@ export default function Chat() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-2 border-t border-zinc-200 p-4 dark:border-zinc-800"
+        className="flex flex-col gap-2 border-t border-line p-4"
       >
-        <p className="text-sm font-medium">{PERSONAL_INFO_NOTICE}</p>
-        <div className="flex items-end gap-2">
+        <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
+          {PERSONAL_INFO_NOTICE}
+        </p>
+        <div className="flex items-end gap-2 rounded-2xl border border-line bg-background p-2 transition-colors focus-within:border-accent">
           <textarea
             aria-label="질문 입력"
             value={question}
@@ -175,12 +180,12 @@ export default function Chat() {
             readOnly={isSending}
             rows={2}
             placeholder="예: 연차는 며칠 전까지 신청해야 하나요?"
-            className="min-w-0 flex-1 resize-none rounded-lg border border-zinc-300 bg-transparent p-3 text-base outline-none placeholder:text-zinc-400 read-only:opacity-60 focus:border-zinc-500 dark:border-zinc-700"
+            className="min-w-0 flex-1 resize-none bg-transparent px-2 py-1.5 text-base outline-none placeholder:text-muted read-only:opacity-60"
           />
           <button
             type="submit"
             disabled={isSending || question.trim() === ""}
-            className="h-12 shrink-0 rounded-lg bg-foreground px-5 font-medium text-background transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-10 shrink-0 rounded-xl bg-accent px-4 font-medium text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
             전송
           </button>
@@ -190,7 +195,7 @@ export default function Chat() {
             className={
               isTooLong
                 ? "font-medium text-red-600 dark:text-red-400"
-                : "text-zinc-500 dark:text-zinc-400"
+                : "text-muted"
             }
           >
             {question.length}/{MAX_QUESTION_LENGTH}
