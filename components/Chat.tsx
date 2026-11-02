@@ -17,9 +17,16 @@ import {
   MAX_QUESTION_LENGTH,
   PERSONAL_INFO_BLOCKED_MESSAGE,
   PERSONAL_INFO_NOTICE,
+  RESPONSE_TIMEOUT_MS,
   TOO_LONG_MESSAGE,
 } from "@/lib/constants";
 import { validateQuestion } from "@/lib/validate-input";
+
+// 입력 문제를 알리는 안내. 화면 검사와 서버 검사의 결과에 함께 쓴다.
+const INPUT_ERROR_MESSAGES: Record<string, string> = {
+  TOO_LONG: TOO_LONG_MESSAGE,
+  PERSONAL_INFO: PERSONAL_INFO_BLOCKED_MESSAGE,
+};
 
 export default function Chat() {
   const [question, setQuestion] = useState("");
@@ -40,15 +47,8 @@ export default function Chat() {
       return;
     }
     const error = validateQuestion(question);
-    if (error === "TOO_LONG") {
-      setNotice(TOO_LONG_MESSAGE);
-      return;
-    }
-    if (error === "PERSONAL_INFO") {
-      setNotice(PERSONAL_INFO_BLOCKED_MESSAGE);
-      return;
-    }
     if (error) {
+      setNotice(INPUT_ERROR_MESSAGES[error] ?? "");
       return;
     }
 
@@ -60,16 +60,24 @@ export default function Chat() {
     setNotice("");
     setIsSending(true);
     setMessages((previous) => [...previous, { role: "user", text: question }]);
+    let failureMessage = ERROR_MESSAGE;
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, history }),
+        signal: AbortSignal.timeout(RESPONSE_TIMEOUT_MS),
       });
       if (!response.ok) {
+        const failure = await response.json().catch(() => null);
+        failureMessage =
+          INPUT_ERROR_MESSAGES[failure?.error?.code] ?? ERROR_MESSAGE;
         throw new Error("답변 요청 실패");
       }
       const answer: ChatResponse = await response.json();
+      if (typeof answer?.text !== "string") {
+        throw new Error("답변 형식 오류");
+      }
       setMessages((previous) => [
         ...previous,
         {
@@ -84,7 +92,7 @@ export default function Chat() {
     } catch {
       // 실패한 질문은 대화에서 빼고 입력창에 남겨, 다시 보내도 중복되지 않게 한다.
       setMessages((previous) => previous.slice(0, -1));
-      setNotice(ERROR_MESSAGE);
+      setNotice(failureMessage);
     } finally {
       setIsSending(false);
     }
