@@ -13,6 +13,7 @@ import ChatMessage, { type Message } from "@/components/ChatMessage";
 import type { ChatResponse } from "@/lib/answer";
 import {
   ERROR_MESSAGE,
+  MAX_HISTORY_MESSAGES,
   MAX_QUESTION_LENGTH,
   PERSONAL_INFO_BLOCKED_MESSAGE,
   PERSONAL_INFO_NOTICE,
@@ -51,6 +52,11 @@ export default function Chat() {
       return;
     }
 
+    // 맥락은 현재 화면의 대화에서만 가져온다. 새로고침하면 사라진다.
+    const history = messages
+      .slice(-MAX_HISTORY_MESSAGES)
+      .map(({ role, text, type }) => ({ role, content: text, type }));
+
     setNotice("");
     setIsSending(true);
     setMessages((previous) => [...previous, { role: "user", text: question }]);
@@ -58,7 +64,7 @@ export default function Chat() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, history }),
       });
       if (!response.ok) {
         throw new Error("답변 요청 실패");
@@ -69,6 +75,7 @@ export default function Chat() {
         {
           role: "assistant",
           text: answer.text,
+          type: answer.type,
           citations: answer.citations,
           isMock: answer.isMock,
         },

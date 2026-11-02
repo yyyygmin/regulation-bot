@@ -1,5 +1,9 @@
 // 질문을 받아 답변을 돌려주는 서버 API. 질문 내용은 로그에 남기지 않는다.
-import { AnswerError, getChatResponse } from "@/lib/answer";
+import {
+  AnswerError,
+  getChatResponse,
+  type HistoryMessage,
+} from "@/lib/answer";
 import { validateHistory, validateQuestion } from "@/lib/validate-input";
 
 function errorResponse(code: string, status: number) {
@@ -21,7 +25,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    return Response.json(await getChatResponse(body?.question as string));
+    return Response.json(
+      await getChatResponse(
+        body?.question as string,
+        body?.history as HistoryMessage[] | undefined,
+      ),
+    );
   } catch (error) {
     if (error instanceof AnswerError) {
       return errorResponse(

@@ -2,6 +2,7 @@
 // 실제 연결 때는 getMockAiOutput 호출만 OpenAI 호출로 바꾼다. 서버 코드에서만 불러온다.
 import {
   MAX_CITATIONS,
+  MAX_HISTORY_MESSAGES,
   MIN_CITATIONS,
   NOT_FOUND_MESSAGE,
   RESPONSE_TIMEOUT_MS,
@@ -9,6 +10,13 @@ import {
 import { type Article, loadArticles } from "@/lib/regulations";
 
 type AnswerType = "answer" | "clarify" | "not_found";
+
+// 현재 화면의 이전 대화 한 개. 서버에 저장하지 않고 요청마다 화면에서 받는다.
+export interface HistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+  type?: AnswerType;
+}
 
 // 화면에 표시할 근거
 export interface Citation {
@@ -46,6 +54,10 @@ export class AnswerError extends Error {
 const MIN_MATCH_SCORE = 4;
 // 제목에 나온 단어가 질문의 주제일 가능성이 높아 더 큰 점수를 준다.
 const TITLE_MATCH_WEIGHT = 3;
+// 앞 질문에 이어 묻는 말인지 판단하는 시작 표현. 가짜 답변 전용의 단순한 규칙이다.
+const FOLLOW_UP_START = /^(그럼|그러면|그건|그거|그때|그런데|그리고|그 경우)/;
+// 이어 묻는 질문에서는 앞 질문보다 지금 질문의 단어를 더 중요하게 본다.
+const CURRENT_QUESTION_WEIGHT = 2;
 
 // 조사가 붙어도 찾을 수 있도록 글을 두 글자씩 잘라 비교한다. 예: "연차는" → "연차", "차는"
 function toBigrams(text: string): Set<string> {
@@ -73,12 +85,25 @@ function scoreArticle(questionBigrams: Set<string>, article: Article): number {
 }
 
 // 질문과 가장 많이 겹치는 조항의 본문을 답으로 돌려주는 가짜 AI
-function findBestArticle(question: string, articles: Article[]): AiOutput {
+function findBestArticle(
+  question: string,
+  history: HistoryMessage[],
+  articles: Article[],
+): AiOutput {
   const questionBigrams = toBigrams(question);
+  const previousQuestion = FOLLOW_UP_START.test(question.trim())
+    ? history.findLast(({ role }) => role === "user")?.content
+    : undefined;
+  const previousBigrams = previousQuestion
+    ? toBigrams(previousQuestion)
+    : undefined;
   let best: Article | undefined;
   let bestScore = 0;
   for (const article of articles) {
-    const score = scoreArticle(questionBigrams, article);
+    const score = previousBigrams
+      ? scoreArticle(questionBigrams, article) * CURRENT_QUESTION_WEIGHT +
+        scoreArticle(previousBigrams, article)
+      : scoreArticle(questionBigrams, article);
     if (score > bestScore) {
       best = article;
       bestScore = score;
@@ -93,6 +118,7 @@ function findBestArticle(question: string, articles: Article[]): AiOutput {
 // 오류 처리를 확인하기 위해 MOCK_AI_SCENARIO로 특정 상황을 일부러 만든다.
 async function getMockAiOutput(
   question: string,
+  history: HistoryMessage[],
   articles: Article[],
 ): Promise<unknown> {
   switch (process.env.MOCK_AI_SCENARIO) {
@@ -123,7 +149,7 @@ async function getMockAiOutput(
         articleIds: [],
       };
     default:
-      return findBestArticle(question, articles);
+      return findBestArticle(question, history, articles);
   }
 }
 
@@ -185,8 +211,13 @@ function toChatResponse(output: unknown, articles: Article[]): ChatResponse {
   };
 }
 
-export async function getChatResponse(question: string): Promise<ChatResponse> {
+export async function getChatResponse(
+  question: string,
+  history: HistoryMessage[] = [],
+): Promise<ChatResponse> {
   const articles = await loadArticles();
-  const output = await withTimeout(getMockAiOutput(question, articles));
+  const output = await withTimeout(
+    getMockAiOutput(question, history.slice(-MAX_HISTORY_MESSAGES), articles),
+  );
   return toChatResponse(output, articles);
 }

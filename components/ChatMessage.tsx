@@ -1,10 +1,11 @@
 // 대화의 메시지 하나를 표시한다. 내 질문은 오른쪽, 답변은 왼쪽에 놓는다.
-import type { Citation } from "@/lib/answer";
+import type { ChatResponse, Citation } from "@/lib/answer";
 import { DISCLAIMER_MESSAGE, MOCK_ANSWER_LABEL } from "@/lib/constants";
 
 export interface Message {
   role: "user" | "assistant";
   text: string;
+  type?: ChatResponse["type"];
   citations?: Citation[];
   isMock?: boolean;
 }
