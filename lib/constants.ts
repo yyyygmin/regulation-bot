@@ -20,6 +20,9 @@ export const TOO_LONG_MESSAGE = "질문은 500자 이내로 입력해 주세요.
 export const PERSONAL_INFO_BLOCKED_MESSAGE =
   "전화번호나 주민등록번호는 지운 뒤 다시 보내 주세요.";
 
+// 가짜 답변임을 알리는 표시. PRD에 문구가 없어 새로 정한 제안 문구다.
+export const MOCK_ANSWER_LABEL = "테스트용 가짜 답변입니다.";
+
 // 질문 최대 글자 수
 export const MAX_QUESTION_LENGTH = 500;
 
