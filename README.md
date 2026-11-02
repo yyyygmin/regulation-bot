@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 규정봇
 
-## Getting Started
+신입사원이 휴가·경비 규정을 문장으로 물으면, 샘플 규정 문서 2종에서 찾아 근거와 함께 답하는 실습용 채팅 서비스입니다.
 
-First, run the development server:
+**지금은 실제 AI를 연결하지 않은 상태입니다.** 답변은 질문의 단어를 규정 문서와 비교해 만든 테스트용 가짜 답변이며, 비용이 나가지 않고 질문도 외부로 나가지 않습니다. 샘플 규정도 실습을 위해 지어낸 내용입니다.
+
+## 실행
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 http://localhost:3000 을 엽니다. API 키가 없어도 실행됩니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 확인
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npm run build
+```
 
-## Learn More
+서버를 실행할 때 환경 변수 `MOCK_AI_SCENARIO`에 아래 값을 넣으면 특정 상황을 일부러 만들 수 있습니다.
 
-To learn more about Next.js, take a look at the following resources:
+`error`, `timeout`, `bad-format`, `fake-citation`, `no-citation`, `too-many-citations`, `clarify`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 문서
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [PRD.md](PRD.md): 요구사항
+- [PLAN.md](PLAN.md): 작업 순서와 진행 상태
+- [DESIGN.md](DESIGN.md): 화면, 데이터 흐름, 기술 선택
+- [CLAUDE.md](CLAUDE.md): 프로젝트 규칙
+- [tests/questions.md](tests/questions.md): 테스트 질문과 정답표
