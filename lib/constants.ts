@@ -24,3 +24,9 @@ export const RESPONSE_TIMEOUT_MS = 30_000;
 // 규정 내용을 답할 때 표시하는 근거 개수
 export const MIN_CITATIONS = 1;
 export const MAX_CITATIONS = 3;
+
+// 서버가 검사하고 AI에 넘기는 이전 대화의 최대 메시지 수
+export const MAX_HISTORY_MESSAGES = 10;
+
+// 이전 대화에 담긴 AI 답변 한 개의 최대 글자 수
+export const MAX_ASSISTANT_MESSAGE_LENGTH = 2_000;

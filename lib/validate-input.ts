@@ -1,5 +1,9 @@
 // 질문을 AI 서비스로 보내기 전에 검사한다. 화면과 서버가 함께 쓴다.
-import { MAX_QUESTION_LENGTH } from "@/lib/constants";
+import {
+  MAX_ASSISTANT_MESSAGE_LENGTH,
+  MAX_HISTORY_MESSAGES,
+  MAX_QUESTION_LENGTH,
+} from "@/lib/constants";
 
 export type InputErrorCode = "INVALID_INPUT" | "TOO_LONG" | "PERSONAL_INFO";
 
@@ -23,6 +27,31 @@ export function validateQuestion(question: unknown): InputErrorCode | null {
   }
   if (PERSONAL_INFO_PATTERNS.some((pattern) => pattern.test(question))) {
     return "PERSONAL_INFO";
+  }
+  return null;
+}
+
+// 이전 대화를 검사한다. 화면 검사를 건너뛰고 API를 직접 호출하는 경우를 막기 위한 서버용 검사다.
+export function validateHistory(history: unknown): InputErrorCode | null {
+  if (history === undefined) {
+    return null;
+  }
+  if (!Array.isArray(history)) {
+    return "INVALID_INPUT";
+  }
+  for (const message of history.slice(-MAX_HISTORY_MESSAGES)) {
+    if (message?.role === "user") {
+      const error = validateQuestion(message.content);
+      if (error) {
+        return error;
+      }
+    } else if (
+      message?.role !== "assistant" ||
+      typeof message.content !== "string" ||
+      message.content.length > MAX_ASSISTANT_MESSAGE_LENGTH
+    ) {
+      return "INVALID_INPUT";
+    }
   }
   return null;
 }

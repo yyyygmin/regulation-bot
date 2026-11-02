@@ -232,6 +232,7 @@ interface ChatResponse {
   type: "answer" | "clarify" | "not_found";
   text: string;
   citations: Citation[];
+  isMock: boolean; // 가짜 답변이면 화면에 테스트용이라고 표시한다. (제안)
 }
 
 // AI 서비스가 돌려줘야 하는 형식 (제안)
