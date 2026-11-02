@@ -66,7 +66,12 @@ export default function Chat() {
       const answer: ChatResponse = await response.json();
       setMessages((previous) => [
         ...previous,
-        { role: "assistant", text: answer.text, isMock: answer.isMock },
+        {
+          role: "assistant",
+          text: answer.text,
+          citations: answer.citations,
+          isMock: answer.isMock,
+        },
       ]);
       setQuestion("");
     } catch {
