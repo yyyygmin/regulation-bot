@@ -1,6 +1,6 @@
 // 대화의 메시지 하나를 표시한다. 내 질문은 오른쪽, 답변은 왼쪽에 놓는다.
 import type { Citation } from "@/lib/answer";
-import { MOCK_ANSWER_LABEL } from "@/lib/constants";
+import { DISCLAIMER_MESSAGE, MOCK_ANSWER_LABEL } from "@/lib/constants";
 
 export interface Message {
   role: "user" | "assistant";
@@ -28,6 +28,9 @@ export default function ChatMessage({ message }: { message: Message }) {
             .join(", ")}
         </p>
       )}
+      <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+        {DISCLAIMER_MESSAGE}
+      </p>
       {message.isMock && (
         <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-400">
           {MOCK_ANSWER_LABEL}
