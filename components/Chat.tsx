@@ -89,6 +89,8 @@ export default function Chat() {
         {
           role: "assistant",
           text: answer.text,
+          fullText:
+            typeof answer.fullText === "string" ? answer.fullText : undefined,
           type: answer.type,
           citations: answer.citations,
           isMock: answer.isMock,

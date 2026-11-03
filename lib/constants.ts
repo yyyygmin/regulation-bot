@@ -32,6 +32,15 @@ export const SUGGESTED_QUESTIONS = [
   "국내 출장 일비는 하루에 얼마인가요?",
 ];
 
+// 개인 상황을 묻는 질문에 규정 안내 뒤 덧붙이는 문구. PRD에 문구가 없어 새로 정한 제안 문구다.
+export const OFFICIAL_CHECK_NOTICE =
+  "위 내용은 관련 규정 안내이며, 개인별 판단은 담당자에게 확인해 주세요.";
+
+// 답변 하나에 먼저 보여주는 최대 문장 수. 넘으면 앞부분만 보이고 원문은 더보기로 연다.
+export const MAX_ANSWER_SENTENCES = 5;
+export const SHOW_MORE_LABEL = "더보기";
+export const SHOW_LESS_LABEL = "접기";
+
 // 질문 최대 글자 수
 export const MAX_QUESTION_LENGTH = 500;
 
