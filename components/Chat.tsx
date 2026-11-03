@@ -17,16 +17,21 @@ import {
   MAX_QUESTION_LENGTH,
   PERSONAL_INFO_BLOCKED_MESSAGE,
   PERSONAL_INFO_NOTICE,
+  RATE_LIMITED_MESSAGE,
+  REQUEST_TOO_LARGE_MESSAGE,
   RESPONSE_TIMEOUT_MS,
   SUGGESTED_QUESTIONS,
   TOO_LONG_MESSAGE,
 } from "@/lib/constants";
+import { buildRequestBody } from "@/lib/request-body";
 import { validateQuestion } from "@/lib/validate-input";
 
-// 입력 문제를 알리는 안내. 화면 검사와 서버 검사의 결과에 함께 쓴다.
+// 입력 문제나 요청 제한을 알리는 안내. 화면 검사와 서버 검사의 결과에 함께 쓴다.
 const INPUT_ERROR_MESSAGES: Record<string, string> = {
   TOO_LONG: TOO_LONG_MESSAGE,
   PERSONAL_INFO: PERSONAL_INFO_BLOCKED_MESSAGE,
+  RATE_LIMITED: RATE_LIMITED_MESSAGE,
+  REQUEST_TOO_LARGE: REQUEST_TOO_LARGE_MESSAGE,
 };
 
 export default function Chat() {
@@ -71,7 +76,8 @@ export default function Chat() {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text, history }),
+        // 본문이 상한을 넘으면 오래된 대화부터 빼고 보낸다.
+        body: buildRequestBody(text, history),
         signal: AbortSignal.timeout(RESPONSE_TIMEOUT_MS),
       });
       if (!response.ok) {

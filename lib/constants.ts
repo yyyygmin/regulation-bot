@@ -56,3 +56,20 @@ export const MAX_HISTORY_MESSAGES = 10;
 
 // 이전 대화에 담긴 AI 답변 한 개의 최대 글자 수
 export const MAX_ASSISTANT_MESSAGE_LENGTH = 2_000;
+
+// 요청 본문(질문과 이전 대화를 합친 전체)의 최대 크기. 한글 1,000자 기준이며, 한글 한 글자는 UTF-8에서 3바이트다.
+// 화면은 이 크기를 넘지 않도록 오래된 대화부터 빼고 보내고, 서버는 넘는 요청을 413으로 거절한다.
+export const MAX_REQUEST_BODY_KOREAN_CHARS = 1_000;
+export const MAX_REQUEST_BODY_BYTES = MAX_REQUEST_BODY_KOREAN_CHARS * 3;
+
+// 접속 주소(IP) 하나가 질문을 보낼 수 있는 횟수. 로그인이 없어 주소로 나눠 센다.
+// 한 사람이 질문을 입력하고 답을 읽는 데 보통 5초 이상 걸려 분당 12회 안팎이므로, 같은 사무실 주소를 쓰는
+// 몇 사람이 함께 써도 막히지 않도록 분당 20회로 정했다. 시간당 150회는 계속 반복 호출하는 사용을 막기 위한 값이다.
+export const RATE_LIMIT_PER_MINUTE = 20;
+export const RATE_LIMIT_PER_HOUR = 150;
+
+// 요청을 거절할 때의 안내. PRD에 문구가 없어 새로 정한 제안 문구다.
+export const RATE_LIMITED_MESSAGE =
+  "짧은 시간에 질문이 너무 많습니다. 잠시 후 다시 시도해 주세요.";
+export const REQUEST_TOO_LARGE_MESSAGE =
+  "질문이 너무 깁니다. 내용을 줄여서 다시 보내 주세요.";

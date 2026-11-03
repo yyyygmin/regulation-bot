@@ -4,17 +4,30 @@ import {
   getChatResponse,
   type HistoryMessage,
 } from "@/lib/answer";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { readTextWithLimit, RequestTooLargeError } from "@/lib/request-body";
 import { validateHistory, validateQuestion } from "@/lib/validate-input";
 
-function errorResponse(code: string, status: number) {
-  return Response.json({ error: { code } }, { status });
+function errorResponse(code: string, status: number, headers?: HeadersInit) {
+  return Response.json({ error: { code } }, { status, headers });
 }
 
 export async function POST(request: Request) {
+  // 가장 싼 검사부터 한다. 호출 횟수 → 본문 크기 → 내용 순서다.
+  const rateLimit = checkRateLimit(getClientIp(request));
+  if (!rateLimit.allowed) {
+    return errorResponse("RATE_LIMITED", 429, {
+      "Retry-After": String(rateLimit.retryAfterSeconds),
+    });
+  }
+
   let body: { question?: unknown; history?: unknown } | null;
   try {
-    body = await request.json();
-  } catch {
+    body = JSON.parse(await readTextWithLimit(request));
+  } catch (error) {
+    if (error instanceof RequestTooLargeError) {
+      return errorResponse("REQUEST_TOO_LARGE", 413);
+    }
     return errorResponse("INVALID_INPUT", 400);
   }
 
